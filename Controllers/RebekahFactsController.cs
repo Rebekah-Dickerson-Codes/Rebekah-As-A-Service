@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Rebekah_As_A_Service.Models;
+using Rebekah_As_A_Service.Processors;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,13 +8,10 @@ namespace Rebekah_As_A_Service.Controllers
     [ApiController]
     [Route("[controller]")]
     public class RebekahFactsController(ILogger<RebekahFactsController> logger) : ControllerBase
-    {
-        //add db accessor 
-        //this should update
-
+    { 
         private readonly ILogger<RebekahFactsController> _logger = logger;
+        private readonly FactsProcessor _factsprocessor = new();
 
-        //freaking what
 
         public class RouteName
         {
@@ -24,13 +21,28 @@ namespace Rebekah_As_A_Service.Controllers
         [HttpGet("api/rebekah/fact/{factCategory}")]
         [SwaggerResponse(200)]
         [SwaggerResponse(400)]
-        public FactResponse GetRebekahFactsByCategoryAsync([FromRoute][Required] string factCategory)
+        public async Task<ActionResult> GetRebekahFactsByCategoryAsync([FromRoute][Required] string factCategory)
         {
-            return new FactResponse
+            if (factCategory == null)
             {
-                Category = FactCategoryEnum.Fun.ToString(),
-                Fact = "randomstring for now"
-            };
+                return BadRequest("Invalid Request. Category cannot be null");
+            }
+            try
+            {
+                var resp = await _factsprocessor.GetFactByCategory(factCategory);
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                var errorId = Guid.NewGuid();
+                _logger.LogError(new EventId(), ex, "Error while trying to get fact. ErrorId {errorId}");
+                var content = new ContentResult
+                {
+                    Content = factCategory,
+                    StatusCode = 500
+                };
+                return content;
+            }
         }
     }
 }
