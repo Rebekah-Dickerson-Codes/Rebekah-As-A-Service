@@ -5,10 +5,18 @@ namespace Rebekah_As_A_Service.Processors
 {
     public class FactsProcessor
     {
-        private DatabaseAccessor _dbAccessor = new();
-        public async Task<FactResponse> GetFactByCategory(string factCategory)
+        private FactDBAccessor _dbAccessor = new();
+        private CategoryDBAccessor _categoryDBAccessor = new();
+        public virtual async Task<List<FactResponse>> GetFactsByCategory(string factCategory)
         {
-            return await _dbAccessor.GetRebekahFactByCategory(factCategory);
+            var response =  await _dbAccessor.GetFactsByCategory(factCategory);
+            return response;
+        }
+
+        public virtual async Task<List<CategoryResponse>> GetCategoriesAsync()
+        {
+            var response = await _categoryDBAccessor.GetCategories();
+            return response;
         }
     }
 }
