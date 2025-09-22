@@ -71,10 +71,37 @@ namespace Rebekah_As_A_Service.Controllers
         [HttpPost("api/admin/fact/create")]
         [SwaggerResponse(200)]
         [SwaggerResponse(400)]
-        public async Task<IActionResult> CreateRebekahFactsAsync([FromRoute][Required] string factCategory)
+        public async Task<IActionResult> CreateRebekahFactsAsync([FromBody][Required] FactCreateRequest createRequest)
         {
-            //placeholder for build
-            return null;
+            if (createRequest == null)
+            {
+                return BadRequest("Invalid request, cannot be null");
+            }
+            if (createRequest.CategoryID <= 0)
+            {
+                return BadRequest("CategoryID must be greater than 0");
+            }
+            if (createRequest.FactDescription == null || createRequest.FactDescription == "")
+            {
+                return BadRequest("FactDescription is required");
+            }
+            try
+            {
+                var result = await _processor.CreateNewFactAsync(createRequest);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var errorId = Guid.NewGuid();
+                _logger.LogError(new EventId(), ex, "Error while trying to insert fact. ErrorId {errorId}");
+                var content = new ContentResult
+                {
+                    //do this better
+                    Content = createRequest.ToString(),
+                    StatusCode = 500
+                };
+                return content;
+            }
         }
 
         [HttpPost("api/admin/category/create/{factCategory}")]

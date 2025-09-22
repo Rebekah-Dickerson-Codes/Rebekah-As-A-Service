@@ -10,6 +10,8 @@ namespace Rebekah_As_A_Service.DataAccess
         private SqliteCommand _command;
         private SqliteConnection _connection;
 
+
+        //DO NOT FUCKING FORGET TO SANITIZE SHIT BEFORE IT GETS HERE
         private void ConnectToDB()
         {
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());

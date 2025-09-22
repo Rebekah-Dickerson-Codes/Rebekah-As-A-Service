@@ -9,7 +9,9 @@ namespace Rebekah_As_A_Service.DataAccess
         private readonly ILogger<FactDBAccessor> _logger;
         private SqliteCommand _command;
         private SqliteConnection _connection;
+        private const string dbTableName = "RebekahFacts";
 
+        //DO NOT FUCKING FORGET TO SANITIZE SHIT BEFORE IT GETS HERE
         private void ConnectToDB()
         {
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
@@ -28,7 +30,7 @@ namespace Rebekah_As_A_Service.DataAccess
         {
             var list = new List<FactResponse>();
             ConnectToDB();
-            _command.CommandText = $"SELECT * FROM RebekahFacts where Category = {category}";
+            _command.CommandText = $"SELECT * FROM {dbTableName} where Category = {category}";
 
             SqliteDataReader reader = _command.ExecuteReader();
             if (reader.HasRows)
@@ -48,11 +50,68 @@ namespace Rebekah_As_A_Service.DataAccess
 
         }
 
+        public async Task<FactResponse> UpdateFactByIdAsync(int factID, FactUpdateRequest request)
+        {
+            var fact = new FactResponse();
+            ConnectToDB();
+
+            var sql = $"UPDATE {dbTableName} SET Fact = '{request.Description}', CategoryID = {request.CategoryID} where FactID = {factID} RETURNING *";
+
+            if (request.Description == null || request.Description == "")
+            {
+                sql = $"UPDATE {dbTableName} SET CategoryID = {request.CategoryID} where FactID = {factID} RETURNING *";
+            }
+
+                _command.CommandText = sql;
+            SqliteDataReader reader = _command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                while (reader.Read())
+                {
+                    fact.Category = reader.GetString(0);
+                    fact.Fact = reader.GetString(1);
+                    fact.FactID = reader.GetInt32(2);
+                    fact.CategoryID = reader.GetInt32(3);
+                }
+            }
+            CloseDB();
+            return fact;
+        }
+
+        public async Task<FactResponse> InsertNewFactAsync(FactCreateRequest request)
+        {
+            var fact = new FactResponse();
+            ConnectToDB();
+
+            _command.CommandText = $"INSERT INTO {dbTableName} (Fact, CategoryID, CategoryName) VALUES ('{request.FactDescription}', {request.CategoryID}, '{request.Category}')";
+
+            SqliteDataReader reader = _command.ExecuteReader();
+            if (reader.VisibleFieldCount > 1)
+            {
+                //need exception
+                throw new Exception();
+            }
+
+            while (reader.Read())
+            {
+                while (reader.Read())
+                {
+                    fact.Category = reader.GetString(0);
+                    fact.Fact = reader.GetString(1);
+                    fact.FactID = reader.GetInt32(2);
+                    fact.CategoryID = reader.GetInt32(3);
+                }
+            }
+            CloseDB();
+            return fact;
+        }
+
         public async Task<FactResponse> GetFactByID(int factID)
         {
             var fact = new FactResponse();
             ConnectToDB();
-            _command.CommandText = $"SELECT * FROM RebekahFacts where FactID = {factID}";
+            _command.CommandText = $"SELECT * FROM {dbTableName} where FactID = {factID}";
 
             SqliteDataReader reader = _command.ExecuteReader();
             if (reader.VisibleFieldCount > 1)
@@ -70,7 +129,7 @@ namespace Rebekah_As_A_Service.DataAccess
                     fact.FactID = reader.GetInt32(2);
                 }
             }
-
+            CloseDB();
             return fact;
 
         }

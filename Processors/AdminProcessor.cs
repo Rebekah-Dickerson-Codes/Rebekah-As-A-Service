@@ -8,25 +8,37 @@ namespace Rebekah_As_A_Service.Processors
     {
         private readonly IFactDBAccessor _dbAccessor;
         private readonly ICategoryDBAccessor _catAccessor;
+        private readonly ILogger<AdminProcessor> _logger;
 
-        public AdminProcessor(IFactDBAccessor factDBAccessor, ICategoryDBAccessor categoryDBAccessor)
+        public AdminProcessor(IFactDBAccessor factDBAccessor, ICategoryDBAccessor categoryDBAccessor, ILoggerFactory loggerFactory)
         {
             _catAccessor = categoryDBAccessor;
             _dbAccessor = factDBAccessor;
+            _logger = loggerFactory.CreateLogger<AdminProcessor>();
         }
 
-        public async Task<FactResponse> GetFactByID(int factID)
+        private async Task<FactResponse> GetFactByID(int factID)
         {
             return await _dbAccessor.GetFactByID(factID);
         }
 
-        public async Task<FactResponse> UpdateFactByID(int factID, FactUpdateRequest request)
+        public async Task<FactResponse?> UpdateFactByID(int factID, FactUpdateRequest request)
         {
-            var factData = GetFactByID(factID);
+            var factData = await GetFactByID(factID);
+            if (factData == null)
+            {
+                _logger.LogInformation($"No Fact Data returned from FactId {factID}");
+                return null;
+            }
 
-            //placeholder
-            return null;
+            var updatedFact = await _dbAccessor.UpdateFactByIdAsync(factID, request);
+            return updatedFact;
+        }
 
+        public async Task<FactResponse> CreateNewFactAsync(FactCreateRequest request)
+        {
+            var newFact = await _dbAccessor.InsertNewFactAsync(request);
+            return newFact;
         }
 
         public async Task AddFactCategoryAsync(string categoryName)
