@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Rebekah_As_A_Service.DataAccess;
 using Rebekah_As_A_Service.DataAccess.Interfaces;
 using Rebekah_As_A_Service.Processors;
@@ -6,7 +7,7 @@ using Rebekah_As_A_Service.Processors.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddAuthentication("Basic").AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null); ;
 builder.Services.AddControllers();
 //dependency injection
 builder.Services.AddSingleton<IAdminProcessor, AdminProcessor>();

@@ -31,7 +31,7 @@ namespace Rebekah_As_A_Service.DataAccess
             ConnectToDB();
             _command.CommandText = $"INSERT into Category (name) VALUES ('{categoryName}')";
 
-            _command.ExecuteScalar();
+            var response = _command.ExecuteScalar();
 
             CloseDB();
         }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Rebekah_As_A_Service.Models;
 using Rebekah_As_A_Service.Processors.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Rebekah_As_A_Service.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class AdminController : ControllerBase
