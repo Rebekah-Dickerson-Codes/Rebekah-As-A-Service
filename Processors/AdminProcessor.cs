@@ -1,4 +1,4 @@
-﻿using Rebekah_As_A_Service.DataAccess;
+﻿using Rebekah_As_A_Service.DataAccess.Interfaces;
 using Rebekah_As_A_Service.Models;
 using Rebekah_As_A_Service.Processors.Interfaces;
 
@@ -6,8 +6,14 @@ namespace Rebekah_As_A_Service.Processors
 {
     public class AdminProcessor : IAdminProcessor
     {
-        private FactDBAccessor _dbAccessor = new();
-        private CategoryDBAccessor _catAccessor = new();
+        private readonly IFactDBAccessor _dbAccessor;
+        private readonly ICategoryDBAccessor _catAccessor;
+
+        public AdminProcessor(IFactDBAccessor factDBAccessor, ICategoryDBAccessor categoryDBAccessor)
+        {
+            _catAccessor = categoryDBAccessor;
+            _dbAccessor = factDBAccessor;
+        }
 
         public async Task<FactResponse> GetFactByID(int factID)
         {
@@ -18,12 +24,14 @@ namespace Rebekah_As_A_Service.Processors
         {
             var factData = GetFactByID(factID);
 
+            //placeholder
             return null;
 
         }
 
         public async Task AddFactCategoryAsync(string categoryName)
         {
+            //placeholder
             await _catAccessor.CreateNewCategory(categoryName);
         }
     }

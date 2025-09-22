@@ -1,9 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
+using Rebekah_As_A_Service.DataAccess.Interfaces;
 using Rebekah_As_A_Service.Models;
 
 namespace Rebekah_As_A_Service.DataAccess
 {
-    public class CategoryDBAccessor
+    public class CategoryDBAccessor : ICategoryDBAccessor
     {
         private readonly ILogger<CategoryDBAccessor> _logger;
         private SqliteCommand _command;
