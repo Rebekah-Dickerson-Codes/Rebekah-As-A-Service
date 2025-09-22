@@ -56,7 +56,7 @@ namespace Rebekah_As_A_Service.Controllers
         [HttpGet("api/rebekah/categories")]
         [SwaggerResponse(200)]
         [SwaggerResponse(400)]
-        public async Task<IActionResult> GetFactsCategoriesAsync()
+        public async Task<IActionResult> GetFactCategoriesAsync()
         {
             try
             {
@@ -70,7 +70,7 @@ namespace Rebekah_As_A_Service.Controllers
             catch (Exception ex)
             {
                 var errorId = Guid.NewGuid();
-                _logger.LogError(new EventId(), ex, "Error while trying to get fact. ErrorId {errorId}");
+                _logger.LogError(new EventId(), ex, "Error while trying to get fact category. ErrorId {errorId}");
                 var content = new ContentResult
                 {
                     Content = ex.Message,

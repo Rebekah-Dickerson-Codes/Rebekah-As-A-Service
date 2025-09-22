@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Rebekah_As_A_Service.Models;
-using Rebekah_As_A_Service.Processors;
+using Rebekah_As_A_Service.Processors.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,26 +8,48 @@ namespace Rebekah_As_A_Service.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AdminController(ILogger<AdminController> logger) : ControllerBase
+    public class AdminController : ControllerBase
     {
-        private readonly ILogger<AdminController> _logger = logger;
-        private readonly AdminProcessor _processor = new();
+        private readonly ILogger<AdminController> _logger;
+        private readonly IAdminProcessor _processor;
+
+        public AdminController(ILoggerFactory loggerFactory, IAdminProcessor processor)
+        {
+            _logger = loggerFactory.CreateLogger<AdminController>();
+            _processor = processor;
+        }
 
         [HttpPut("api/admin/fact/update/{factID}")]
         [SwaggerResponse(200)]
         [SwaggerResponse(400)]
         public async Task<IActionResult> UpdateRebekahFactsAsync([FromRoute][Required] int factID, [FromBody] FactUpdateRequest request)
         {
+            if (factID <= 0)
+            {
+                return BadRequest("FactId must be greater than 0");
+            }
+            if (request == null)
+            {
+                return BadRequest("Request cannot be null");
+            }
+            if (request.Category == null || request.Category == "" || request.Description == null || request.Description == "")
+            {
+                return BadRequest("Request must include non-empty Category and Description for update");
+            }
             try
             {
-                var resp =  _processor.UpdateFactByID(factID, request);
+                var resp =  await _processor.UpdateFactByID(factID, request);
+                if(resp == null)
+                {
+                    return NotFound($"Fact could not be updated, FactId {factID} could not be found");
+                }
                 return Ok(resp);
             }
 
             catch (Exception ex)
             {
                 var errorId = Guid.NewGuid();
-                _logger.LogError(new EventId(), ex, "Error while trying to get fact. ErrorId {errorId}");
+                _logger.LogError(new EventId(), ex, "Error while trying to update fact. ErrorId {errorId}");
                 var content = new ContentResult
                 {
                     Content = factID.ToString(),
