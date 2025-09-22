@@ -1,9 +1,10 @@
 ﻿using Rebekah_As_A_Service.DataAccess;
 using Rebekah_As_A_Service.Models;
+using Rebekah_As_A_Service.Processors.Interfaces;
 
 namespace Rebekah_As_A_Service.Processors
 {
-    public class FactsProcessor
+    public class FactsProcessor : IFactsProcessor
     {
         private FactDBAccessor _dbAccessor = new();
         private CategoryDBAccessor _categoryDBAccessor = new();

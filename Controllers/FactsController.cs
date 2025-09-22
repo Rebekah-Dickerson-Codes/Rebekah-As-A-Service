@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Rebekah_As_A_Service.Processors;
+using Rebekah_As_A_Service.Processors.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,12 +7,16 @@ namespace Rebekah_As_A_Service.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FactsController(ILogger<FactsController> logger) : ControllerBase
+    public class FactsController : ControllerBase
     { 
-        private readonly ILogger<FactsController> _logger = logger;
-        private readonly FactsProcessor _factsprocessor = new();
+        private readonly ILogger<FactsController> _logger;
+        private readonly IFactsProcessor _factsProcessor;
 
-
+        public FactsController(ILoggerFactory logFactory, IFactsProcessor factsProcessor)
+        {
+            _factsProcessor = factsProcessor;
+            _logger = logFactory.CreateLogger<FactsController>();
+        }
         public class RouteName
         {
             public const string GetRebekahFactsByCategory = nameof(GetRebekahFactsByCategory);
@@ -29,10 +33,10 @@ namespace Rebekah_As_A_Service.Controllers
             }
             try
             {
-                var resp = await _factsprocessor.GetFactsByCategory(factCategory);
+                var resp = await _factsProcessor.GetFactsByCategory(factCategory);
                 if (resp.Count == 0)
                 {
-                    return NotFound("No Facts in that Category were found");
+                    return NotFound("No Facts in the provided Category were found");
                 }
                 return Ok(resp);
             }
@@ -56,7 +60,7 @@ namespace Rebekah_As_A_Service.Controllers
         {
             try
             {
-                var resp = await _factsprocessor.GetCategoriesAsync();
+                var resp = await _factsProcessor.GetCategoriesAsync();
                 if (resp.Count == 0)
                 {
                     return NotFound("No Categories Found");
