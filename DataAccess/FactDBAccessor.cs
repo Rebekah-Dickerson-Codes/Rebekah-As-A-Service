@@ -84,7 +84,7 @@ namespace Rebekah_As_A_Service.DataAccess
             var fact = new FactResponse();
             ConnectToDB();
 
-            _command.CommandText = $"INSERT INTO {dbTableName} (Fact, CategoryID, CategoryName) VALUES ('{request.FactDescription}', {request.CategoryID}, '{request.Category}')";
+            _command.CommandText = $"INSERT INTO {dbTableName} (Fact, CategoryID, CategoryName) VALUES ('{request.FactDescription}', {request.CategoryID}, '{request.Category}') RETURNING *";
 
             SqliteDataReader reader = _command.ExecuteReader();
             if (reader.VisibleFieldCount > 1)
@@ -104,6 +104,7 @@ namespace Rebekah_As_A_Service.DataAccess
                 }
             }
             CloseDB();
+            //this isn't returning new values, look into this
             return fact;
         }
 
@@ -114,7 +115,7 @@ namespace Rebekah_As_A_Service.DataAccess
             _command.CommandText = $"SELECT * FROM {dbTableName} where FactID = {factID}";
 
             SqliteDataReader reader = _command.ExecuteReader();
-            if (reader.VisibleFieldCount > 1)
+            if (reader.VisibleFieldCount < 1)
             {
                 //need exception
                 throw new Exception();
