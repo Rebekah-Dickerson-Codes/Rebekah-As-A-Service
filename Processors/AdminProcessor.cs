@@ -17,15 +17,20 @@ namespace Rebekah_As_A_Service.Processors
             _logger = loggerFactory.CreateLogger<AdminProcessor>();
         }
 
-        private async Task<FactResponse> GetFactByID(int factID)
+        private async Task<bool> FactIDExists(int factID)
         {
-            return await _dbAccessor.GetFactByID(factID);
+            var factId =  await _dbAccessor.GetFactByID(factID);
+            if (factId == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         public async Task<FactResponse?> UpdateFactByID(int factID, FactUpdateRequest request)
         {
-            var factData = await GetFactByID(factID);
-            if (factData == null)
+            var factDataExists = await FactIDExists(factID);
+            if (!factDataExists)
             {
                 _logger.LogInformation($"No Fact Data returned from FactId {factID}");
                 return null;
@@ -38,6 +43,17 @@ namespace Rebekah_As_A_Service.Processors
         public async Task<FactResponse> CreateNewFactAsync(FactCreateRequest request)
         {
             var newFact = await _dbAccessor.InsertNewFactAsync(request);
+            return newFact;
+        }
+
+        public async Task<FactResponse?> DeleteFactByIDAsync(int factID)
+        {
+            var isValidFactID = await FactIDExists(factID);
+            if (!isValidFactID)
+            {
+                return null;
+            }
+            var newFact = await _dbAccessor.DeleteFactByID(factID);
             return newFact;
         }
 

@@ -64,8 +64,30 @@ namespace Rebekah_As_A_Service.Controllers
         [SwaggerResponse(400)]
         public async Task<IActionResult> DeleteRebekahFactsAsync([FromRoute][Required] int factID)
         {
-            //placeholder for build
-            return null;
+            if (factID <= 0)
+            {
+                return BadRequest("FactId must be greater than 0");
+            }
+            try
+            {
+                var resp = await _processor.DeleteFactByIDAsync(factID);
+                if (resp == null)
+                {
+                    return NotFound($"Fact could not be deleted, FactId {factID} could not be found");
+                }
+                return Ok(resp);
+            }
+            catch (Exception ex)
+            {
+                var errorId = Guid.NewGuid();
+                _logger.LogError(new EventId(), ex, "Error while trying to update fact. ErrorId {errorId}");
+                var content = new ContentResult
+                {
+                    Content = factID.ToString(),
+                    StatusCode = 500
+                };
+                return content;
+            }
         }
 
         [HttpPost("api/admin/fact/create")]

@@ -132,7 +132,32 @@ namespace Rebekah_As_A_Service.DataAccess
             }
             CloseDB();
             return fact;
+        }
 
+        public async Task<FactResponse> DeleteFactByID(int factID)
+        {
+            var fact = new FactResponse();
+            ConnectToDB();
+            _command.CommandText = $"DELETE FROM {dbTableName} where FactID = {factID}";
+
+            SqliteDataReader reader = _command.ExecuteReader();
+            if (reader.VisibleFieldCount < 1)
+            {
+                //need exception
+                throw new Exception();
+            }
+
+            while (reader.Read())
+            {
+                while (reader.Read())
+                {
+                    fact.Category = reader.GetString(0);
+                    fact.Fact = reader.GetString(1);
+                    fact.FactID = reader.GetInt32(2);
+                }
+            }
+            CloseDB();
+            return fact;
         }
     }
 }

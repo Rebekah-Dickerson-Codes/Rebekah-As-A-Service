@@ -8,6 +8,7 @@ namespace Rebekah_As_A_Service.Processors.Interfaces
         public Task AddFactCategoryAsync(string categoryName);
 
         public Task<FactResponse> CreateNewFactAsync(FactCreateRequest request);
+        public Task<FactResponse?> DeleteFactByIDAsync(int FactID);
 
     }
 }
